@@ -32,7 +32,8 @@ def listenAndAccept(s):
 def walkTheTree(currDir):
     body = '\n'
     for sub in os.listdir(currDir):
-		body = body + sub +'<br />'
+		body = body + '<a href=' + QUERY + os.path.join(currDir, sub) +'? >'+ sub + '</a><br />'
+    body = body + '<a href=' + QUERY + os.path.dirname(currDir) +'? > .. </a><br />'
     return body
 	
 if __name__=='__main__':
@@ -47,9 +48,10 @@ if __name__=='__main__':
 			currDir = os.getcwd() if len(arr) < 3 else arr[1]
 			print "Curr dir: " + currDir + "\n"
 			body = walkTheTree(currDir)
+			print "BODY ==>"+ body +"\n"
 			clientsock.sendall(HTML_HEADER_PROTO + CONTENT_TYPE + DEFAULT_TYPE + HTML_BODY_HEAD + body + HTML_BODY_TRAIL) 
 			clientsock.close()
-   except socket.error, msg:
-		print 'Socket Failed :' +msg[1]
+   except Exception, err:
+		print 'Error occured :' + str(err)
 
    
