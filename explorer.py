@@ -1,9 +1,10 @@
 import socket
+import os
 
 TCP_IP = '127.0.0.1'
 TCP_PORT = 9999
 ADDRESS = TCP_IP + ":" + str(TCP_PORT)
-
+QUERY = 'http://' + ADDRESS + '?'
 BUFFER_SIZE = 2000
 MESSAGE = 'Hello World!'
 HTML_HEADER_PROTO = """HTTP/1.0 200 OK"""
@@ -27,12 +28,28 @@ def listenAndAccept(s):
     conn, addr = s.accept()
     print 'Connection address:', addr
     return conn, addr
+
+def walkTheTree(currDir):
+    body = '\n'
+    for sub in os.listdir(currDir):
+		body = body + sub +'<br />'
+    return body
 	
 if __name__=='__main__':
    s = createTCPServer()
-   clientsock, addr = listenAndAccept(s)
-   clientsock.recv(BUFFER_SIZE)
-   clientsock.sendall(HTML_HEADER_PROTO + CONTENT_TYPE + DEFAULT_TYPE + HTML_BODY_HEAD + MESSAGE + HTML_BODY_TRAIL)
-   clientsock.close()
-   s.close()
+   try:
+    s.listen(5)
+    while True: 
+			clientsock, addr = s.accept()
+			data = clientsock.recv(BUFFER_SIZE)
+			arr = data.split('?')
+			print arr
+			currDir = os.getcwd() if len(arr) < 3 else arr[1]
+			print "Curr dir: " + currDir + "\n"
+			body = walkTheTree(currDir)
+			clientsock.sendall(HTML_HEADER_PROTO + CONTENT_TYPE + DEFAULT_TYPE + HTML_BODY_HEAD + body + HTML_BODY_TRAIL) 
+			clientsock.close()
+   except socket.error, msg:
+		print 'Socket Failed :' +msg[1]
+
    
