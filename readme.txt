@@ -1,0 +1,1 @@
+It is a simple TCP based web server which facilitates exploring files and folders.
