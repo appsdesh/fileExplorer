@@ -1,5 +1,6 @@
 import socket
 import os
+import mimetypes
 
 TCP_IP = '127.0.0.1'
 TCP_PORT = 9999
@@ -29,12 +30,34 @@ def listenAndAccept(s):
     print 'Connection address:', addr
     return conn, addr
 
+def readFile(filename):
+	body = '\n'
+	type, encode = mimetypes.guess_type(filename)
+	if type is None:
+	 type = DEFAULT_TYPE
+	elif 'image' in type:
+	 body ='<img src="' + filename + '">'
+	else:
+	 type = DEFAULT_TYPE
+	 try:
+		f = open(filename, 'r')
+		body = "<div>" + f.read() + "</div>"
+	 except:
+		print "Error in file handling\n"
+	return type + '\n\n', body
+	
 def walkTheTree(currDir):
     body = '\n'
-    for sub in os.listdir(currDir):
-		body = body + '<a href=' + QUERY + os.path.join(currDir, sub) +'? >'+ sub + '</a><br />'
-    body = body + '<a href=' + QUERY + os.path.dirname(currDir) +'? > .. </a><br />'
-    return body
+    type = DEFAULT_TYPE
+	
+    if not os.path.isdir(currDir):
+      print currDir + ": is a file\n";
+      type, body = readFile(currDir)
+    else:
+		for sub in os.listdir(currDir):
+			body = body + '<a href=' + QUERY + os.path.join(currDir, sub) +'? >'+ sub + '</a><br />'
+		body = body + '<a href=' + QUERY + os.path.dirname(currDir) +'? > .. </a><br />'
+    return type, body
 	
 if __name__=='__main__':
    s = createTCPServer()
@@ -44,13 +67,12 @@ if __name__=='__main__':
 			clientsock, addr = s.accept()
 			data = clientsock.recv(BUFFER_SIZE)
 			arr = data.split('?')
-			print arr
 			currDir = os.getcwd() if len(arr) < 3 else arr[1]
 			print "Curr dir: " + currDir + "\n"
-			body = walkTheTree(currDir)
-			print "BODY ==>"+ body +"\n"
-			clientsock.sendall(HTML_HEADER_PROTO + CONTENT_TYPE + DEFAULT_TYPE + HTML_BODY_HEAD + body + HTML_BODY_TRAIL) 
+			type, body = walkTheTree(currDir)
+			clientsock.sendall(HTML_HEADER_PROTO + CONTENT_TYPE + type + HTML_BODY_HEAD + body + HTML_BODY_TRAIL) 
 			clientsock.close()
+    s.close()
    except Exception, err:
 		print 'Error occured :' + str(err)
 
