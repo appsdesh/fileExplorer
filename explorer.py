@@ -6,6 +6,13 @@ ADDRESS = TCP_IP + ":" + str(TCP_PORT)
 
 BUFFER_SIZE = 2000
 MESSAGE = 'Hello World!'
+HTML_HEADER_PROTO = """HTTP/1.0 200 OK"""
+CONTENT_TYPE = """
+Content-Type: """
+
+HTML_BODY_HEAD = """<html><head><title>Success</title></head><body>"""
+HTML_BODY_TRAIL = """</body></html>"""
+DEFAULT_TYPE = """text/html""" + '\n\n'
 
 def createTCPServer():
     try:
@@ -25,7 +32,7 @@ if __name__=='__main__':
    s = createTCPServer()
    clientsock, addr = listenAndAccept(s)
    clientsock.recv(BUFFER_SIZE)
-   clientsock.sendall(MESSAGE)
+   clientsock.sendall(HTML_HEADER_PROTO + CONTENT_TYPE + DEFAULT_TYPE + HTML_BODY_HEAD + MESSAGE + HTML_BODY_TRAIL)
    clientsock.close()
    s.close()
    
